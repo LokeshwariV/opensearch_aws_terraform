@@ -1,0 +1,39 @@
+stages:
+  - build
+  - test
+  - validate
+  - destroy
+  - deploy_prod
+
+variables:
+  TF_VAR_environment: "production"
+
+build:
+  stage: build
+  script:
+    - terraform init
+    - terraform plan -out=tfplan
+
+test:
+  stage: test
+  script:
+    - terraform validate
+
+validate:
+  stage: validate
+  script:
+    - terraform apply -input=false tfplan
+
+destroy:
+  stage: destroy
+  script:
+    - terraform destroy -auto-approve
+  only:
+    - tags
+
+deploy_prod:
+  stage: deploy_prod
+  only:
+    - tags
+  script:
+    - terraform apply -auto-approve

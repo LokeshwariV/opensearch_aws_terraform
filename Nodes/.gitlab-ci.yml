@@ -1,0 +1,32 @@
+stages:
+  - build
+  - validate
+  - provision
+  - configure
+
+variables:
+  TF_VAR_aws_access_key_id: "" #(gitlab secrets)
+  TF_VAR_aws_secret_access_key: "" #(gitlab secrets)
+  TF_VAR_environment: "dev"
+
+build:
+  stage: build
+  script:
+    - terraform init
+    - terraform fmt -check -recursive
+    - terraform validate
+
+validate:
+  stage: validate
+  script:
+    - terraform plan
+
+provision:
+  stage: provision
+  script:
+    - terraform apply -auto-approve
+
+configure:
+  stage: deploy
+  script:
+    - chef-client --local-mode --runlist "recipe[cookbook_filebeat_logstash::default]

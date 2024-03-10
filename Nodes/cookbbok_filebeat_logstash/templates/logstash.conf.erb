@@ -1,0 +1,37 @@
+input {
+    beats {
+      port => 5044
+    }
+}
+
+filter {
+    if "catalina-log" in [tags] {
+        mutate {
+                remove_field => ["offset", "prospector","@version","source","host","[beat][hostname]","[beat][name]","[beat][version]","input","beat","log","[agent][name]","[event][original]","[ecs][version]","[agent][ephemeral_id]","[agent][id]","[agent][type]","[agent][version]","message"]
+        }
+    }
+    if "beats_input_codec_plain_applied" in [tags] {
+        mutate {
+            remove_tag => ["beats_input_codec_plain_applied"]
+        }
+    }
+    if "_grokparsefailure" in [tags] {
+        mutate {
+            remove_tag => ["_grokparsefailure"]
+        }
+    } 
+}
+
+output {
+    if "catalina-log" in [tags] {
+        opensearch { 
+            hosts => ["https://YOUR_DOMAIN_ENDPOINT_URL:443"]
+            ssl => true
+            index => "catalina-dev-%{+YYYY.MM.dd}"
+            ecs_compatibility => disabled
+            user => "admin"
+            password => "PASSWORD_THAT_WE_HAVE_CREATE"
+        }
+    }
+  stdout { }
+}
